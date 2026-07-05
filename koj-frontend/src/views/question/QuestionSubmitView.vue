@@ -33,8 +33,14 @@
       }"
       @page-change="onPageChange"
     >
-      <template #judgeInfo="{ record }">
-        {{ JSON.stringify(record.judgeInfo) }}
+      <template #judgeResult="{ record }">
+        {{ getJudgeResult(record) }}
+      </template>
+      <template #judgeTime="{ record }">
+        {{ formatJudgeMetric(record.judgeInfo?.time, "ms") }}
+      </template>
+      <template #judgeMemory="{ record }">
+        {{ formatJudgeMetric(record.judgeInfo?.memory, "KB") }}
       </template>
       <template #createTime="{ record }">
         {{ moment(record.createTime).format("YYYY-MM-DD") }}
@@ -48,13 +54,14 @@ import { ref, watch } from "vue";
 import {
   QuestionControllerService,
   QuestionSubmitQueryRequest,
+  QuestionSubmitVO,
 } from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
 import moment from "moment";
 
 const tableRef = ref();
 
-const dataList = ref([]);
+const dataList = ref<QuestionSubmitVO[]>([]);
 const total = ref(0);
 const searchParams = ref<QuestionSubmitQueryRequest>({
   questionId: undefined,
@@ -85,6 +92,29 @@ const loadData = async () => {
   }
 };
 
+const getJudgeResult = (record: QuestionSubmitVO) => {
+  if (record?.judgeInfo?.message) {
+    return record.judgeInfo.message;
+  }
+  if (record?.status === 0) {
+    return "Waiting";
+  }
+  if (record?.status === 1) {
+    return "Running";
+  }
+  if (record?.status === 3) {
+    return "System Error";
+  }
+  return "-";
+};
+
+const formatJudgeMetric = (value?: number, unit?: string) => {
+  if (value === undefined || value === null) {
+    return "-";
+  }
+  return unit ? `${value} ${unit}` : value;
+};
+
 /**
  * 监听 searchParams 变量，改变时触发页面的重新加载
  */
@@ -100,12 +130,16 @@ const columns = [
     dataIndex: "language",
   },
   {
-    title: "判题信息",
-    slotName: "judgeInfo",
+    title: "判题结果",
+    slotName: "judgeResult",
   },
   {
-    title: "判题状态",
-    dataIndex: "status",
+    title: "执行时间",
+    slotName: "judgeTime",
+  },
+  {
+    title: "内存消耗",
+    slotName: "judgeMemory",
   },
   {
     title: "题目 id",
