@@ -32,11 +32,7 @@
         </a-space>
       </template>
       <template #acceptedRate="{ record }">
-        {{
-          `${
-            record.submitNum ? record.acceptedNum / record.submitNum : "0"
-          }% (${record.acceptedNum}/${record.submitNum})`
-        }}
+        {{ getAcceptedRate(record) }}
       </template>
       <template #createTime="{ record }">
         {{ moment(record.createTime).format("YYYY-MM-DD") }}
@@ -53,15 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from "vue";
+import { ref, watch } from "vue";
 import {
-  Page_Question_,
   Question,
   QuestionControllerService,
   QuestionQueryRequest,
 } from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
-import * as querystring from "querystring";
 import { useRouter } from "vue-router";
 import moment from "moment";
 
@@ -76,13 +70,19 @@ const searchParams = ref<QuestionQueryRequest>({
   current: 1,
 });
 
+let requestId = 0;
+
 const loadData = async () => {
+  const currentRequestId = ++requestId;
   const res = await QuestionControllerService.listQuestionVoByPageUsingPost(
     searchParams.value
   );
+  if (currentRequestId !== requestId) {
+    return;
+  }
   if (res.code === 0) {
-    dataList.value = res.data.records;
-    total.value = res.data.total;
+    dataList.value = res.data?.records ?? [];
+    total.value = res.data?.total ?? 0;
   } else {
     message.error("加载失败，" + res.message);
   }
@@ -91,16 +91,7 @@ const loadData = async () => {
 /**
  * 监听 searchParams 变量，改变时触发页面的重新加载
  */
-watchEffect(() => {
-  loadData();
-});
-
-/**
- * 页面加载时，请求数据
- */
-onMounted(() => {
-  loadData();
-});
+watch(searchParams, loadData, { immediate: true, deep: true });
 
 // {id: "1", title: "A+ D", content: "新的题目内容", tags: "["二叉树"]", answer: "新的答案", submitNum: 0,…}
 
@@ -138,6 +129,17 @@ const onPageChange = (page: number) => {
 };
 
 const router = useRouter();
+
+const getAcceptedRate = (question: Question) => {
+  const acceptedNum = question.acceptedNum ?? 0;
+  const submitNum = question.submitNum ?? 0;
+  if (!submitNum) {
+    return `0% (${acceptedNum}/${submitNum})`;
+  }
+  return `${((acceptedNum / submitNum) * 100).toFixed(
+    2
+  )}% (${acceptedNum}/${submitNum})`;
+};
 
 /**
  * 跳转到做题页面

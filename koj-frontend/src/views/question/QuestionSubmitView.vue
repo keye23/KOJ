@@ -44,14 +44,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from "vue";
+import { ref, watch } from "vue";
 import {
-  Question,
   QuestionControllerService,
   QuestionSubmitQueryRequest,
 } from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
-import { useRouter } from "vue-router";
 import moment from "moment";
 
 const tableRef = ref();
@@ -65,7 +63,10 @@ const searchParams = ref<QuestionSubmitQueryRequest>({
   current: 1,
 });
 
+let requestId = 0;
+
 const loadData = async () => {
+  const currentRequestId = ++requestId;
   const res = await QuestionControllerService.listQuestionSubmitByPageUsingPost(
     {
       ...searchParams.value,
@@ -73,9 +74,12 @@ const loadData = async () => {
       sortOrder: "descend",
     }
   );
+  if (currentRequestId !== requestId) {
+    return;
+  }
   if (res.code === 0) {
-    dataList.value = res.data.records;
-    total.value = res.data.total;
+    dataList.value = res.data?.records ?? [];
+    total.value = res.data?.total ?? 0;
   } else {
     message.error("加载失败，" + res.message);
   }
@@ -84,16 +88,7 @@ const loadData = async () => {
 /**
  * 监听 searchParams 变量，改变时触发页面的重新加载
  */
-watchEffect(() => {
-  loadData();
-});
-
-/**
- * 页面加载时，请求数据
- */
-onMounted(() => {
-  loadData();
-});
+watch(searchParams, loadData, { immediate: true, deep: true });
 
 const columns = [
   {
@@ -131,18 +126,6 @@ const onPageChange = (page: number) => {
     ...searchParams.value,
     current: page,
   };
-};
-
-const router = useRouter();
-
-/**
- * 跳转到做题页面
- * @param question
- */
-const toQuestionPage = (question: Question) => {
-  router.push({
-    path: `/view/question/${question.id}`,
-  });
 };
 
 /**

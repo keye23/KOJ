@@ -10,20 +10,20 @@
                 :column="{ xs: 1, md: 2, lg: 3 }"
               >
                 <a-descriptions-item label="时间限制">
-                  {{ question.judgeConfig.timeLimit ?? 0 }}
+                  {{ question.judgeConfig?.timeLimit ?? 0 }}
                 </a-descriptions-item>
                 <a-descriptions-item label="内存限制">
-                  {{ question.judgeConfig.memoryLimit ?? 0 }}
+                  {{ question.judgeConfig?.memoryLimit ?? 0 }}
                 </a-descriptions-item>
                 <a-descriptions-item label="堆栈限制">
-                  {{ question.judgeConfig.stackLimit ?? 0 }}
+                  {{ question.judgeConfig?.stackLimit ?? 0 }}
                 </a-descriptions-item>
               </a-descriptions>
               <MdViewer :value="question.content || ''" />
               <template #extra>
                 <a-space wrap>
                   <a-tag
-                    v-for="(tag, index) of question.tags"
+                    v-for="(tag, index) of question.tags ?? []"
                     :key="index"
                     color="green"
                     >{{ tag }}
@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect, withDefaults, defineProps } from "vue";
+import { onMounted, ref, withDefaults, defineProps } from "vue";
 import message from "@arco-design/web-vue/es/message";
 import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
@@ -92,10 +92,10 @@ const question = ref<QuestionVO>();
 
 const loadData = async () => {
   const res = await QuestionControllerService.getQuestionVoByIdUsingGet(
-    props.id as any
+    props.id as unknown as number
   );
   if (res.code === 0) {
-    question.value = res.data;
+    question.value = res.data ?? {};
   } else {
     message.error("加载失败，" + res.message);
   }

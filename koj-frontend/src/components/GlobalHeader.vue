@@ -22,9 +22,13 @@
       </a-menu>
     </a-col>
     <a-col flex="100px">
-      <div>
-        {{ store.state.user?.loginUser?.userName ?? "未登录" }}
-      </div>
+      <a-dropdown v-if="isLogin" trigger="click">
+        <a-button type="text">{{ loginUserName }}</a-button>
+        <template #content>
+          <a-doption @click="handleLogout">注销</a-doption>
+        </template>
+      </a-dropdown>
+      <div v-else>{{ loginUserName }}</div>
     </a-col>
   </a-row>
 </template>
@@ -32,28 +36,22 @@
 <script setup lang="ts">
 import { routes } from "../router/routes";
 import { useRoute, useRouter } from "vue-router";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 import checkAccess from "@/access/checkAccess";
 import ACCESS_ENUM from "@/access/accessEnum";
+import message from "@arco-design/web-vue/es/message";
+import { UserControllerService } from "../../generated";
 
 const router = useRouter();
+const route = useRoute();
 const store = useStore();
 
-setTimeout(() => {
-  console.log("3秒到了！");
-  store.dispatch("user/getLoginUser", {
-    userName: "鱼皮",
-  });
-}, 3000);
-
-// 展示在菜单的路由数组
 const visibleRoutes = computed(() => {
-  return routes.filter((item, index) => {
+  return routes.filter((item) => {
     if (item.meta?.hideInMenu) {
       return false;
     }
-    // 根据权限过滤菜单
     if (
       !checkAccess(store.state.user.loginUser, item?.meta?.access as string)
     ) {
@@ -63,27 +61,38 @@ const visibleRoutes = computed(() => {
   });
 });
 
-// 默认主页
-const selectedKeys = ref(["/"]);
+const selectedKeys = computed(() => [route.path]);
 
-// 路由跳转后，更新选中的菜单项
-router.afterEach((to, from, failure) => {
-  selectedKeys.value = [to.path];
+const loginUserName = computed(
+  () =>
+    store.state.user?.loginUser?.userAccount ??
+    store.state.user?.loginUser?.userName ??
+    "未登录"
+);
+
+const isLogin = computed(() => {
+  const loginUser = store.state.user?.loginUser;
+  return !!loginUser?.userRole && loginUser.userRole !== ACCESS_ENUM.NOT_LOGIN;
 });
-
-console.log();
-
-/*setTimeout(() => {
-  store.dispatch("user/getLoginUser", {
-    userName: "鱼皮管理员",
-    userRole: ACCESS_ENUM.ADMIN,
-  });
-}, 3000);*/
 
 const doMenuClick = (key: string) => {
   router.push({
     path: key,
   });
+};
+
+const handleLogout = async () => {
+  const res = await UserControllerService.userLogoutUsingPost();
+  if (res.code === 0) {
+    store.commit("user/updateUser", {
+      userName: "未登录",
+      userRole: ACCESS_ENUM.NOT_LOGIN,
+    });
+    message.success("注销成功");
+    router.push("/user/login");
+  } else {
+    message.error("注销失败，" + res.message);
+  }
 };
 </script>
 

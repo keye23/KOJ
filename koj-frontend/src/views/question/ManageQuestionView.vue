@@ -23,14 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from "vue";
-import {
-  Page_Question_,
-  Question,
-  QuestionControllerService,
-} from "../../../generated";
+import { ref, watch } from "vue";
+import { Question, QuestionControllerService } from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
-import * as querystring from "querystring";
 import { useRouter } from "vue-router";
 
 const tableRef = ref();
@@ -42,13 +37,19 @@ const searchParams = ref({
   current: 1,
 });
 
+let requestId = 0;
+
 const loadData = async () => {
+  const currentRequestId = ++requestId;
   const res = await QuestionControllerService.listQuestionByPageUsingPost(
     searchParams.value
   );
+  if (currentRequestId !== requestId) {
+    return;
+  }
   if (res.code === 0) {
-    dataList.value = res.data.records;
-    total.value = res.data.total;
+    dataList.value = res.data?.records ?? [];
+    total.value = res.data?.total ?? 0;
   } else {
     message.error("加载失败，" + res.message);
   }
@@ -57,16 +58,7 @@ const loadData = async () => {
 /**
  * 监听 searchParams 变量，改变时触发页面的重新加载
  */
-watchEffect(() => {
-  loadData();
-});
-
-/**
- * 页面加载时，请求数据
- */
-onMounted(() => {
-  loadData();
-});
+watch(searchParams, loadData, { immediate: true, deep: true });
 
 // {id: "1", title: "A+ D", content: "新的题目内容", tags: "["二叉树"]", answer: "新的答案", submitNum: 0,…}
 

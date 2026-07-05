@@ -100,7 +100,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import MdEditor from "@/components/MdEditor.vue";
-import { QuestionControllerService } from "../../../generated";
+import {
+  JudgeCase,
+  JudgeConfig,
+  QuestionAddRequest,
+  QuestionControllerService,
+  QuestionUpdateRequest,
+} from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
 import { useRoute } from "vue-router";
 
@@ -108,7 +114,9 @@ const route = useRoute();
 // 如果页面地址包含 update，视为更新页面
 const updatePage = route.path.includes("update");
 
-let form = ref({
+type QuestionForm = QuestionAddRequest & Pick<QuestionUpdateRequest, "id">;
+
+let form = ref<QuestionForm>({
   title: "",
   tags: [],
   answer: "",
@@ -126,6 +134,20 @@ let form = ref({
   ],
 });
 
+function parseJsonField<T>(value: unknown, fallback: T): T {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  if (typeof value !== "string") {
+    return value as T;
+  }
+  try {
+    return JSON.parse(value) as T;
+  } catch (e) {
+    return fallback;
+  }
+}
+
 /**
  * 根据题目 id 获取老的数据
  */
@@ -135,35 +157,26 @@ const loadData = async () => {
     return;
   }
   const res = await QuestionControllerService.getQuestionByIdUsingGet(
-    id as any
+    Number(id)
   );
   if (res.code === 0) {
-    form.value = res.data as any;
-    // json 转 js 对象
-    if (!form.value.judgeCase) {
-      form.value.judgeCase = [
-        {
-          input: "",
-          output: "",
-        },
-      ];
-    } else {
-      form.value.judgeCase = JSON.parse(form.value.judgeCase as any);
-    }
-    if (!form.value.judgeConfig) {
-      form.value.judgeConfig = {
+    form.value = res.data ?? {};
+    // 后端实体字段是 JSON 字符串，提交接口需要对象/数组。
+    form.value.judgeCase = parseJsonField<JudgeCase[]>(form.value.judgeCase, [
+      {
+        input: "",
+        output: "",
+      },
+    ]);
+    form.value.judgeConfig = parseJsonField<JudgeConfig>(
+      form.value.judgeConfig,
+      {
         memoryLimit: 1000,
         stackLimit: 1000,
         timeLimit: 1000,
-      };
-    } else {
-      form.value.judgeConfig = JSON.parse(form.value.judgeConfig as any);
-    }
-    if (!form.value.tags) {
-      form.value.tags = [];
-    } else {
-      form.value.tags = JSON.parse(form.value.tags as any);
-    }
+      }
+    );
+    form.value.tags = parseJsonField<string[]>(form.value.tags, []);
   } else {
     message.error("加载失败，" + res.message);
   }
@@ -174,7 +187,6 @@ onMounted(() => {
 });
 
 const doSubmit = async () => {
-  console.log(form.value);
   // 区分更新还是创建
   if (updatePage) {
     const res = await QuestionControllerService.updateQuestionUsingPost(

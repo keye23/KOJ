@@ -9,7 +9,15 @@
 
 <script setup lang="ts">
 import * as monaco from "monaco-editor";
-import { onMounted, ref, toRaw, withDefaults, defineProps, watch } from "vue";
+import {
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  toRaw,
+  withDefaults,
+  defineProps,
+  watch,
+} from "vue";
 
 /**
  * 定义组件属性类型
@@ -26,8 +34,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   value: () => "",
   language: () => "java",
-  handleChange: (v: string) => {
-    console.log(v);
+  handleChange: () => {
+    return undefined;
   },
 });
 
@@ -78,6 +86,12 @@ onMounted(() => {
   codeEditor.value.onDidChangeModelContent(() => {
     props.handleChange(toRaw(codeEditor.value).getValue());
   });
+});
+
+onBeforeUnmount(() => {
+  if (codeEditor.value) {
+    toRaw(codeEditor.value).dispose();
+  }
 });
 </script>
 

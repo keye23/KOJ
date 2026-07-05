@@ -24,7 +24,7 @@ const plugins = [
 /**
  * 给组件指定初始值
  */
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   value: () => "",
 });
 </script>

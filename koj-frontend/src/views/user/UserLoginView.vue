@@ -18,9 +18,12 @@
         />
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 120px">
-          登录
-        </a-button>
+        <a-space>
+          <a-button type="primary" html-type="submit" style="width: 120px">
+            登录
+          </a-button>
+          <a-button type="text" @click="goRegister">注册</a-button>
+        </a-space>
       </a-form-item>
     </a-form>
   </div>
@@ -30,7 +33,7 @@
 import { reactive } from "vue";
 import { UserControllerService, UserLoginRequest } from "../../../generated";
 import message from "@arco-design/web-vue/es/message";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 /**
@@ -42,7 +45,25 @@ const form = reactive({
 } as UserLoginRequest);
 
 const router = useRouter();
+const route = useRoute();
 const store = useStore();
+
+const goRegister = () => {
+  router.push("/user/register");
+};
+
+const getRedirectPath = () => {
+  const redirect = route.query.redirect;
+  const redirectPath = Array.isArray(redirect) ? redirect[0] : redirect;
+  if (
+    redirectPath &&
+    redirectPath.startsWith("/") &&
+    !redirectPath.startsWith("//")
+  ) {
+    return redirectPath;
+  }
+  return "/questions";
+};
 
 /**
  * 提交表单
@@ -53,10 +74,7 @@ const handleSubmit = async () => {
   // 登录成功，跳转到主页
   if (res.code === 0) {
     await store.dispatch("user/getLoginUser");
-    router.push({
-      path: "/",
-      replace: true,
-    });
+    router.replace(getRedirectPath());
   } else {
     message.error("登陆失败，" + res.message);
   }

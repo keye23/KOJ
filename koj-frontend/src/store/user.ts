@@ -1,20 +1,26 @@
-// initial state
-import { StoreOptions } from "vuex";
+import { ActionContext, Module } from "vuex";
 import ACCESS_ENUM from "@/access/accessEnum";
-import { UserControllerService } from "../../generated";
+import { LoginUserVO, UserControllerService } from "../../generated";
 
-export default {
+export type UserState = {
+  loginUser: LoginUserVO;
+};
+
+export type RootState = {
+  user: UserState;
+};
+
+const user: Module<UserState, RootState> = {
   namespaced: true,
   state: () => ({
     loginUser: {
+      userAccount: "",
       userName: "未登录",
+      userRole: ACCESS_ENUM.NOT_LOGIN,
     },
   }),
   actions: {
-    async getLoginUser({ commit, state }, payload) {
-      /*// todo 从远程获取登录信息
-      commit("updateUser", { userName: "鱼皮" });*/
-      // 从远程请求获取登录信息
+    async getLoginUser({ commit, state }: ActionContext<UserState, RootState>) {
       const res = await UserControllerService.getLoginUserUsingGet();
       if (res.code === 0) {
         commit("updateUser", res.data);
@@ -24,17 +30,15 @@ export default {
           userRole: ACCESS_ENUM.NOT_LOGIN,
         });
       }
-      /*console.log("action 执行了！", payload); // 看日志
-      // ✅ 使用传入的用户数据，不是写死
-      commit("updateUser", payload);*/
     },
   },
   mutations: {
-    updateUser(state, payload) {
-      // state.loginUser = payload;
+    updateUser(state: UserState, payload?: LoginUserVO) {
       if (payload) {
         state.loginUser = { ...payload };
       }
     },
   },
-} as StoreOptions<any>;
+};
+
+export default user;

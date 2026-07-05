@@ -11,7 +11,9 @@
         <router-view />
       </a-layout-content>
       <a-layout-footer class="footer">
-        <a href="Sungl.com.cn" target="_blank"> 欢迎来到KOJ！ </a>
+        <a href="https://Sungl.com.cn" target="_blank" rel="noreferrer">
+          欢迎来到KOJ！
+        </a>
       </a-layout-footer>
     </a-layout>
   </div>
