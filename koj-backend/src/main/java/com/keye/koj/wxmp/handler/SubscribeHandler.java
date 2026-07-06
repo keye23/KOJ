@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @author <a href="https://github.com/likeye">程序员鱼皮</a>
  * @from <a href="https://keye.icu">编程导航知识星球</a>
  **/
-@Component
+/*@Component
 public class SubscribeHandler implements WxMpMessageHandler {
 
     @Override
@@ -28,4 +28,4 @@ public class SubscribeHandler implements WxMpMessageHandler {
                 .toUser(wxMpXmlMessage.getFromUser())
                 .build();
     }
-}
+}*/

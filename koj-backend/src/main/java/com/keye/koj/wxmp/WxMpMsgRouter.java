@@ -1,6 +1,6 @@
 package com.keye.koj.wxmp;
 
-import com.keye.koj.wxmp.handler.EventHandler;
+/*import com.keye.koj.wxmp.handler.EventHandler;
 import com.keye.koj.wxmp.handler.MessageHandler;
 import com.keye.koj.wxmp.handler.SubscribeHandler;
 import javax.annotation.Resource;
@@ -9,7 +9,7 @@ import me.chanjar.weixin.common.api.WxConsts.XmlMsgType;
 import me.chanjar.weixin.mp.api.WxMpMessageRouter;
 import me.chanjar.weixin.mp.api.WxMpService;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Configuration;*/
 
 /**
  * 微信公众号路由
@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @author <a href="https://github.com/likeye">程序员鱼皮</a>
  * @from <a href="https://keye.icu">编程导航知识星球</a>
  */
-@Configuration
+/*@Configuration
 public class WxMpMsgRouter {
 
     @Resource
@@ -58,4 +58,4 @@ public class WxMpMsgRouter {
                 .end();
         return router;
     }
-}
+}*/

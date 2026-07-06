@@ -1,6 +1,6 @@
 package com.keye.koj.controller;
 
-import com.keye.koj.wxmp.WxMpConstant;
+/*import com.keye.koj.wxmp.WxMpConstant;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestController;*/
 
 /**
  * 微信公众号相关接口
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author <a href="https://github.com/likeye">程序员鱼皮</a>
  * @from <a href="https://keye.icu">编程导航知识星球</a>
  **/
-@RestController
+/*@RestController
 @RequestMapping("/")
 @Slf4j
 public class WxMpController {
@@ -89,12 +89,12 @@ public class WxMpController {
         }
     }
 
-    /**
+    *//**
      * 设置公众号菜单
      *
      * @return
      * @throws WxErrorException
-     */
+     *//*
     @GetMapping("/setMenu")
     public String setMenu() throws WxErrorException {
         log.info("setMenu");
@@ -132,4 +132,4 @@ public class WxMpController {
         wxMpService.getMenuService().menuCreate(wxMenu);
         return "ok";
     }
-}
+}*/
