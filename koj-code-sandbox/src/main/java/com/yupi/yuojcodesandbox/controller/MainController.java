@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@RestController("/")
+@RestController
 public class MainController {
 
     // 定义鉴权请求头和密钥
